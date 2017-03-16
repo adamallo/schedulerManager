@@ -1,7 +1,6 @@
 from __future__ import print_function
-import sys, os, re
+import sys, os, re, imp
 from pysqlite2 import dbapi2 as sqlite
-import imp
 
 #Configuration variables
 confvars=imp.load_source("config", os.path.dirname(os.path.abspath(__file__))+"/config.txt")
@@ -61,9 +60,9 @@ curdb.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",("p
 if curdb.fetchone()==None:
     raise ValueError("The database does not contain the pendingJobs table")
                 
-curdb.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",("submittedJobs",))
-if curdb.fetchone()==None:
-    raise ValueError("The database does not contain the submittedJobs table")
+#curdb.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?",("submittedJobs",))
+#if curdb.fetchone()==None:
+#    raise ValueError("The database does not contain the submittedJobs table")
 ##
 
 sep=" "

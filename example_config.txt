@@ -1,0 +1,8 @@
+import logging
+
+dbFile='~/schedulerManager/pending_jobs.db'
+logFile='~/schedulerManager/sb.log'
+loggingLevel=logging.DEBUG
+pidFile='/tmp/sm_daemon.pid'
+wTime=20
+defaultPartition="private"

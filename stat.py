@@ -59,9 +59,12 @@ if not args.j ==-1:
             eprint("The jobid %d is not valid" % (args.j,))
             sys.exit(1)
 else:
-    raise NotImplementedError("All jobs option has not been implemented yet")
-    ##All jobs 
-    ##Print table pendingjobs
-    ##Execute squeue -u with all partitions in the table
+    #raise NotImplementedError("All jobs option has not been implemented yet")
+    curdb.execute("SELECT * FROM pendingJobs")
+    print("PendingJobs:\nID\tPartition\tCommand")
+    for job in curdb:
+        print("%d\t%s\t%s" % (job[0],job[2],job[1]))
+        
+    ##Execute squeue -u with all partitions in the table ??
 
 sys.exit(0)

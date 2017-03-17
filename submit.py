@@ -2,10 +2,14 @@ from __future__ import print_function
 import sys, os, re, imp
 from pysqlite2 import dbapi2 as sqlite
 
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL) ##To avoid piping problems with head and other programs that stop the pipe
+
 #Configuration variables
 confvars=imp.load_source("config", os.path.dirname(os.path.abspath(__file__))+"/config.txt")
 defaultPartition=confvars.defaultPartition
 dbFile=confvars.dbFile
+defPrior=confvars.defaultPrior
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -66,7 +70,7 @@ if curdb.fetchone()==None:
 ##
 
 sep=" "
-curdb.execute("INSERT INTO pendingJobs (command,partition) VALUES (?,?)", (sep.join(["-D",os.getcwd()]+arguments),partition))
+curdb.execute("INSERT INTO pendingJobs (command,partition,priority) VALUES (?,?,?)", (sep.join(["-D",os.getcwd()]+arguments),partition,defPrior))
 ownId=curdb.lastrowid
 db.commit()
 print("Queued job %d" % (ownId,))

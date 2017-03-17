@@ -1,8 +1,9 @@
 from __future__ import print_function
-import sys, os, re, getpass, subprocess
+import sys, os, re, getpass, subprocess, argparse, imp
 from pysqlite2 import dbapi2 as sqlite
-import argparse
-import imp
+
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL) ##To avoid piping problems with head and other programs that stop the pipe
 
 #Configuration variables
 confvars=imp.load_source("config", os.path.dirname(os.path.abspath(__file__))+"/config.txt")
@@ -38,13 +39,24 @@ if curdb.fetchone()==None:
 
 if not args.j ==-1:
     ##This job
-    curdb.execute("SELECT * FROM pendingJobs WHERE id=?",(args.j,))
-    job=curdb.fetchone()
-    if job is not None:
-        print("The job %d is waiting to be submitted to the partition %s" % (job[0],job[2]))
-        sys.exit(0)
-    else:
-        curdb.execute("SELECT * FROM submittedJobs WHERE id=?",(args.j,))
+    #curdb.execute("SELECT * FROM pendingJobs WHERE id=? ORDER BY priority DESC, time ASC",(args.j,))
+    curdb.execute("SELECT * FROM pendingJobs ORDER BY priority DESC, time ASC")
+    n_entry=1
+    foundJob=False
+    for job in curdb:
+        if job[0]==args.j:
+            print("The job %d is waiting to be submitted to the partition %s in position %d" % (job[0],job[2],n_entry))
+            foundJob=True
+            break
+        else:
+            n_entry=n_entry+1
+    if foundJob==False:   
+    #job=curdb.fetchone()
+    #if job is not None:
+    #    print("The job %d is waiting to be submitted to the partition %s" % (job[0],job[2]))
+    #    sys.exit(0)
+    #else:
+        curdb.execute("SELECT id, jobid, command, partition, rtime, stime FROM submittedJobs WHERE id=?",(args.j,))
         job=curdb.fetchone()
         if job is not None:
             print("The job %d was submitted to the partition %s with jobid %d" % (job[0],job[3],job[1]))
@@ -60,10 +72,10 @@ if not args.j ==-1:
             sys.exit(1)
 else:
     #raise NotImplementedError("All jobs option has not been implemented yet")
-    curdb.execute("SELECT * FROM pendingJobs")
-    print("PendingJobs:\nID\tPartition\tCommand")
+    curdb.execute("SELECT id, command, partition, priority, time FROM pendingJobs ORDER BY priority DESC, time ASC")
+    print("PendingJobs:\nID\tPartition\tCommand\tPriority")
     for job in curdb:
-        print("%d\t%s\t%s" % (job[0],job[2],job[1]))
+        print("%d\t%s\t%s\t%d" % (job[0],job[2],job[1],job[3]))
         
     ##Execute squeue -u with all partitions in the table ??
 

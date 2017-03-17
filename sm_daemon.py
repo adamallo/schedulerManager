@@ -48,13 +48,13 @@ class MyDaemon(Daemon):
             else:
                 logging.info("Creating databases")
                 try:
-                    curdb.execute("CREATE TABLE pendingJobs (id INTEGER PRIMARY KEY AUTOINCREMENT, command text, partition text)")
+                    curdb.execute("CREATE TABLE pendingJobs (id INTEGER PRIMARY KEY AUTOINCREMENT, command text, partition text, priority INTEGER, time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)")
                     db.commit()
                 except:
                     logging.error("Error creating the table pendingJobs in the mysqlite database");
                     raise
                 try:
-                    curdb.execute("CREATE TABLE submittedJobs (id INTEGER PRIMARY KEY, jobid INTEGER, command text, partition text)")
+                    curdb.execute("CREATE TABLE submittedJobs (id INTEGER PRIMARY KEY, jobid INTEGER, command text, partition text, rtime TIMESTAMP, stime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)")
                     db.commit()
                 except:
                     logging.error("Error creating the table submittedJobs in the mysqlite database");
@@ -71,7 +71,7 @@ class MyDaemon(Daemon):
                 if newdataversion!=dataversion or (newsubmitted != submitted and failed==1): ##If the database has been changed or if it does not but some jobs have failed and the number of queued jobs has changed
                     failed=0
                     logging.debug("Submitting jobs")
-                    curdb.execute("SELECT * FROM pendingJobs");
+                    curdb.execute("SELECT id, command, partition, priority, time FROM pendingJobs ORDER BY priority DESC, time ASC");
                     jobs=curdb.fetchall();
                     for job in jobs: ##TODO add any kind of check for jobs that fail constantly and do something with them
                         logging.debug("Submitting job %s" % job[0])
@@ -84,7 +84,7 @@ class MyDaemon(Daemon):
                             jobid=re.sub(self.regexp,"\g<1>",sbatchOut)
                             try:
                                 curdb.execute("DELETE FROM pendingJobs WHERE id=?",(job[0],))
-                                curdb.execute("INSERT INTO submittedJobs (id,jobid,command,partition) VALUES (?,?,?,?)",(job[0],int(jobid),job[1],job[2]))
+                                curdb.execute("INSERT INTO submittedJobs (id,jobid,command,partition,rtime) VALUES (?,?,?,?,?)",(job[0],int(jobid),job[1],job[2],job[4]))
                                 db.commit()
                             except:
                                 logging.error("Error changing job from pending to submited")

@@ -2,6 +2,9 @@ from __future__ import print_function
 import sys, os, re, imp, argparse,getpass
 from pysqlite2 import dbapi2 as sqlite
 
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL) ##To avoid piping problems with head and other programs that stop the pipe
+
 #Configuration variables
 confvars=imp.load_source("config", os.path.dirname(os.path.abspath(__file__))+"/config.txt")
 defaultPartition=confvars.defaultPartition

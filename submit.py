@@ -14,7 +14,7 @@ defPrior=confvars.defaultPrior
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-usage="Usage: %s sbatch_arguments" % sys.argv[0]
+usage="Usage: %s sbatch_arguments\n\n--prior: priority for the schedule wrapper" % sys.argv[0]
 
 ##Argument parsing
 iargv=0
@@ -28,6 +28,8 @@ if len(sys.argv) <= 1:
 reopt=re.compile("^-")
 repart=re.compile("--partition.")
 
+fprior=defPrior
+
 iargv=1
 
 while iargv < len(sys.argv):
@@ -38,6 +40,9 @@ while iargv < len(sys.argv):
             sys.exit(0)
         elif arg == "-p":
             partition=sys.argv[iargv+1]
+            iargv=iargv+1
+        elif arg == "--prior":
+            fprior=sys.argv[iargv+1]
             iargv=iargv+1
         elif re.match(repart,arg) is not None : ##--partition=part
             partition=re.sub(repart,"",arg)
@@ -70,7 +75,7 @@ if curdb.fetchone()==None:
 ##
 
 sep=" "
-curdb.execute("INSERT INTO pendingJobs (command,partition,priority) VALUES (?,?,?)", (sep.join(["-D",os.getcwd()]+arguments),partition,defPrior))
+curdb.execute("INSERT INTO pendingJobs (command,partition,priority) VALUES (?,?,?)", (sep.join(["-D",os.getcwd()]+arguments),partition,fprior))
 ownId=curdb.lastrowid
 db.commit()
 print("Queued job %d" % (ownId,))

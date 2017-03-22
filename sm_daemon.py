@@ -75,12 +75,14 @@ class MyDaemon(Daemon):
                     jobs=curdb.fetchall();
                     for job in jobs: ##TODO add any kind of check for jobs that fail constantly and do something with them
                         logging.debug("Submitting job %s" % job[0])
-                        sbatchObj=subprocess.Popen(['sbatch','-p',job[2]]+job[1].split(" "),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                        logging.warning(" ".join(['. ./home/'+self.name+"/.bashrc;",'sbatch','-p',job[2]]+job[1].split(" ")))
+                        sbatchObj=subprocess.Popen(" ".join(['. ./home/'+self.name+"/.bashrc;",'sbatch','-p',job[2]]+job[1].split(" ")),stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,executable="/bin/bash")
                         sbatchOut,sbatchErr=sbatchObj.communicate()
+                        logging.debug("Submitted, stdout:"+sbatchOut+"; stderr:"+sbatchErr)
                         sbatchErrCode=abs(sbatchObj.returncode)
                         if sbatchErrCode == 0:
                             #sucess
-                            logging.info("Job  %s was submitted properly" % job[0])
+                            logging.debug("Job  %s was submitted properly" % job[0])
                             jobid=re.sub(self.regexp,"\g<1>",sbatchOut)
                             try:
                                 curdb.execute("DELETE FROM pendingJobs WHERE id=?",(job[0],))
@@ -91,7 +93,7 @@ class MyDaemon(Daemon):
                                 raise
                         else:
                             #Error, skip this entry and add it to a dictionary
-                            logging.warning("Job %s submission failed, stdout %s, stderr %s, error %d" % (job[0],sbatchOut,sbatchErr,sbatchErrCode))
+                            logging.debug("Job %s submission failed, stdout %s, stderr %s, error %d" % (job[0],sbatchOut,sbatchErr,sbatchErrCode))
                             if job[0] in self.trials:
                                 self.trials[job[0]]=self.trials[job[0]]+1
                             else:

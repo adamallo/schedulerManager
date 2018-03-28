@@ -40,7 +40,7 @@ if curdb.fetchone()==None:
 if not args.j ==-1:
     ##This job
     #curdb.execute("SELECT * FROM pendingJobs WHERE id=? ORDER BY priority DESC, time ASC",(args.j,))
-    curdb.execute("SELECT * FROM pendingJobs ORDER BY priority DESC, time ASC")
+    curdb.execute("SELECT * FROM pendingJobs ORDER BY priority DESC, rtime ASC")
     n_entry=1
     foundJob=False
     for job in curdb:
@@ -72,7 +72,7 @@ if not args.j ==-1:
             sys.exit(1)
 else:
     #raise NotImplementedError("All jobs option has not been implemented yet")
-    curdb.execute("SELECT id, command, partition, priority, time FROM pendingJobs ORDER BY priority DESC, time ASC")
+    curdb.execute("SELECT id, command, partition, priority, rtime FROM pendingJobs ORDER BY priority DESC, rtime ASC")
     print("PendingJobs:\nID\tPartition\tCommand\tPriority")
     for job in curdb:
         print("%d\t%s\t%s\t%d" % (job[0],job[2],job[1],job[3]))

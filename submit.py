@@ -1,7 +1,7 @@
 from __future__ import print_function
 import sys, os, re, imp
 from pysqlite2 import dbapi2 as sqlite
-
+from job import job, pendingjob, submittedjob, stoppedjob
 from signal import signal, SIGPIPE, SIG_DFL
 signal(SIGPIPE, SIG_DFL) ##To avoid piping problems with head and other programs that stop the pipe
 
@@ -14,11 +14,12 @@ defPrior=confvars.defaultPrior
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-usage="Usage: %s sbatch_arguments\n\n--prior: priority for the schedule wrapper" % sys.argv[0]
+usage="Usage: %s sbatch_arguments\n\n--prior: priority for the schedule wrapper\n--dep: dependencies, :separated" % sys.argv[0]
 
 ##Argument parsing
 iargv=0
 partition=defaultPartition
+dependency=""
 arguments=list()
 
 if len(sys.argv) <= 1:
@@ -27,6 +28,7 @@ if len(sys.argv) <= 1:
 
 reopt=re.compile("^-")
 repart=re.compile("--partition.")
+redep=re.compile("^--dependency=(.*)")
 
 fprior=defPrior
 
@@ -44,6 +46,8 @@ while iargv < len(sys.argv):
         elif arg == "--prior":
             fprior=sys.argv[iargv+1]
             iargv=iargv+1
+        elif re.match(redep,arg):
+            dependency=re.match(redep,arg).group(1)
         elif re.match(repart,arg) is not None : ##--partition=part
             partition=re.sub(repart,"",arg)
         else:
@@ -75,7 +79,7 @@ if curdb.fetchone()==None:
 ##
 
 sep=" "
-curdb.execute("INSERT INTO pendingJobs (command,partition,priority) VALUES (?,?,?)", (sep.join(["-D",os.getcwd()]+arguments),partition,fprior))
+curdb.execute("INSERT INTO pendingJobs (command,partition,priority,dependency_id,attempts,depattempts) VALUES (?,?,?,?,?,?)", (sep.join(["-D",os.getcwd()]+arguments),partition,fprior,dependency,0,0))
 ownId=curdb.lastrowid
 db.commit()
 print("Queued job %d" % (ownId,))

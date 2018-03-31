@@ -53,11 +53,11 @@ while iargv < len(sys.argv):
         else:
             arguments.append(arg) ##Other things
     else:
-        if os.path.exists(arg): ##File or directory
-            path=os.path.abspath(arg)
-            arguments.append(path)
-        else:
-            arguments.append(arg) ##Other things
+#        if os.path.exists(arg): ##File or directory
+#            path=os.path.abspath(arg)
+#            arguments.append(path)
+#        else:
+        arguments.append(arg) ##Other things
     iargv=iargv+1
 
 ##DB connection

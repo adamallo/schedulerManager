@@ -9,5 +9,6 @@ pidFile=confvars.pidFile
 wTime=confvars.wTime
 maxAttempts=confvars.maxAttempts
 maxDepAttempts=confvars.maxDepAttempts
+MaxRetry=confvars.maxRetry
 regex=confvars.regex
 regexp=re.compile(regex)

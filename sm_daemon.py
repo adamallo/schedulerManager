@@ -54,11 +54,19 @@ class MyDaemon(Daemon):
 
             submitted=-1
             dataversion=-1
+            nretry=0
             while True:
                 newsubmitted=int(subprocess.Popen(self.getjobs,stdout=subprocess.PIPE,shell=True).communicate()[0])
                 db.execute("PRAGMA data_version")
                 newdataversion=int(db.fetchone()[0])
-                if newdataversion!=dataversion or (newsubmitted != submitted and failed==1): ##If the database has been changed or if it does not but some jobs have failed and the number of queued jobs has changed
+                if newdataversion!=dataversion or (newsubmitted != submitted and failed==1) or (nretry>=MaxRetry): ##If the database has been changed or if it does not but some jobs have failed and the number of queued jobs has changed
+                    
+                    if (nretry>=MaxRetry):
+                        nretry=0
+                        logging.debug("Retrying even though there was no change. Just double-checking")
+                    else:
+                        nretry=nretry+1
+
                     failed=0
                     logging.debug("Submitting jobs")
                     jobs=db.exefetchall("SELECT * FROM pendingJobs ORDER BY priority DESC, rtime ASC")

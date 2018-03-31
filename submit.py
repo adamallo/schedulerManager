@@ -51,12 +51,8 @@ while iargv < len(sys.argv):
         elif re.match(repart,arg) is not None : ##--partition=part
             partition=re.sub(repart,"",arg)
         else:
-            arguments.append(arg) ##Other things
+            arguments.append(arg) ##Other non-parsed options things
     else:
-#        if os.path.exists(arg): ##File or directory
-#            path=os.path.abspath(arg)
-#            arguments.append(path)
-#        else:
         arguments.append(arg) ##Other things
     iargv=iargv+1
 
@@ -79,7 +75,8 @@ if curdb.fetchone()==None:
 ##
 
 sep=" "
-curdb.execute("INSERT INTO pendingJobs (command,partition,priority,dependency_id,attempts,depattempts) VALUES (?,?,?,?,?,?)", (sep.join(["-D",os.getcwd()]+arguments),partition,fprior,dependency,0,0))
+dir=os.getcwd()
+curdb.execute("INSERT INTO pendingJobs (command,dir,partition,priority,dependency_id,attempts,depattempts) VALUES (?,?,?,?,?,?,?)", (sep.join(arguments),dir,partition,fprior,dependency,0,0))
 ownId=curdb.lastrowid
 db.commit()
 print("Queued job %d" % (ownId,))

@@ -4,7 +4,7 @@ from sharedconfig import *
 ##TODO: Still a good number of hardcoded things
 ##TODO: I could implement defaults for every class to reduce hardcoding in the implementation of submit
 class job (object):
-    sqlitecolumns=(("id","INTEGER PRIMARY KEY AUTOINCREMENT"), ("command", "text"), ("partition", "text"), ("priority", "INTEGER"), ("dependency_id", "text"), ("attempts", "INTEGER"), ("depattempts", "INTEGER"), ("rtime", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL"))
+    sqlitecolumns=(("id","INTEGER PRIMARY KEY AUTOINCREMENT"), ("command", "text"), ("dir","text"), ("partition", "text"), ("priority", "INTEGER"), ("dependency_id", "text"), ("attempts", "INTEGER"), ("depattempts", "INTEGER"), ("rtime", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL"))
 
     def __init__(self,content):
         self.elements={ self.sqlitecolumns[i][0]:i for i in xrange(0,len(self.sqlitecolumns)) }
@@ -37,9 +37,10 @@ class job (object):
                 logging.debug(" ".join(("The dependency ",str(id)," has not been fulfilled yet for job ",str(self.get("id")))))
                 return False
         return ":".join(str(x) for x in depjids)
-
-    def getsqlite(self):
-        return ", ".join([ " ".join((tup[0],tup[1])) for tup in self.sqlitecolumns ])
+    
+    @classmethod
+    def getsqlite(cls):
+        return ", ".join([ " ".join((tup[0],tup[1])) for tup in cls.sqlitecolumns ])
 
     def getsqliteinsert(self):
         nondefkeys=[ self.sqlitecolumns[i][0] for i in xrange(0,len(self.sqlitecolumns)) if re.match(".*DEFAULT.*",self.sqlitecolumns[i][1]) is None ]
@@ -89,8 +90,8 @@ class pendingjob(job):
 
         myid=self.get("id")
         logging.debug("Submitting job %s" % myid)
-        logging.warning(" ".join(['. ./home/'+db.name+"/.bashrc;",'sbatch','-p',self.get("partition")+depcommand]+self.get("command").split(" ")))
-        sbatchObj=subprocess.Popen(" ".join(['. ./home/'+db.name+"/.bashrc;",'sbatch','-p',self.get("partition")+depcommand]+self.get("command").split(" ")),stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,executable="/bin/bash")
+        logging.warning(" ".join(['source /home/'+db.name+"/.bashrc; cd",self.get("dir"),";",'sbatch','-p',self.get("partition")+depcommand]+self.get("command").split(" ")))
+        sbatchObj=subprocess.Popen(" ".join(['source /home/'+db.name+"/.bashrc; cd",self.get("dir"),";",'sbatch','-p',self.get("partition")+depcommand]+self.get("command").split(" ")),stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True,executable="/bin/bash")
         sbatchOut,sbatchErr=sbatchObj.communicate()
         logging.debug("Submitted, stdout:"+sbatchOut+"; stderr:"+sbatchErr)
         sbatchErrCode=abs(sbatchObj.returncode)
@@ -129,10 +130,10 @@ class pendingjob(job):
             raise
 
 class submittedjob(job):
-    sqlitecolumns=(("id","INTEGER PRIMARY KEY"), ("jobid", "INTEGER"), ("command", "text"), ("partition", "text"), ("priority", "INTEGER"), ("dependency_id", "text"), ("dependency_fid", "text"), ("attempts", "INTEGER"), ("depattempts", "INTEGER"), ("rtime", "TIMESTAMP"), ("stime", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL"))
+    sqlitecolumns=(("id","INTEGER PRIMARY KEY"), ("jobid", "INTEGER"), ("command", "text"), ("dir","text"), ("partition", "text"), ("priority", "INTEGER"), ("dependency_id", "text"), ("dependency_fid", "text"), ("attempts", "INTEGER"), ("depattempts", "INTEGER"), ("rtime", "TIMESTAMP"), ("stime", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL"))
 
 class submittedjob(job):
-    sqlitecolumns=(("id","INTEGER PRIMARY KEY"), ("jobid", "INTEGER"), ("command", "text"), ("partition", "text"), ("priority", "INTEGER"), ("dependency_id", "text"), ("dependency_fid", "text"), ("attempts", "INTEGER"), ("depattempts", "INTEGER"), ("rtime", "TIMESTAMP"), ("stime", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL"))
+    sqlitecolumns=(("id","INTEGER PRIMARY KEY"), ("jobid", "INTEGER"), ("command", "text"), ("dir","text"), ("partition", "text"), ("priority", "INTEGER"), ("dependency_id", "text"), ("dependency_fid", "text"), ("attempts", "INTEGER"), ("depattempts", "INTEGER"), ("rtime", "TIMESTAMP"), ("stime", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL"))
 
 class stoppedjob(job):
-    sqlitecolumns=(("id","INTEGER PRIMARY KEY"), ("jobid", "INTEGER"), ("command", "text"), ("partition", "text"), ("priority", "INTEGER"), ("dependency_id", "text"), ("dependency_fid", "text"), ("attempts", "INTEGER"), ("depattempts", "INTEGER"), ("rtime", "TIMESTAMP"), ("stime","TIMESTAMP"), ("etime","TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL"))
+    sqlitecolumns=(("id","INTEGER PRIMARY KEY"), ("jobid", "INTEGER"), ("command", "text"), ("dir","text"), ("partition", "text"), ("priority", "INTEGER"), ("dependency_id", "text"), ("dependency_fid", "text"), ("attempts", "INTEGER"), ("depattempts", "INTEGER"), ("rtime", "TIMESTAMP"), ("stime","TIMESTAMP"), ("etime","TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL"))

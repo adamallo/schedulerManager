@@ -72,10 +72,10 @@ if not args.j ==-1:
             sys.exit(1)
 else:
     #raise NotImplementedError("All jobs option has not been implemented yet")
-    curdb.execute("SELECT id, command, partition, priority, rtime FROM pendingJobs ORDER BY priority DESC, rtime ASC")
-    print("PendingJobs:\nID\tPartition\tCommand\tPriority")
+    curdb.execute("SELECT id, command, partition, dependency_id ,priority, rtime FROM pendingJobs ORDER BY priority DESC, rtime ASC")
+    print("PendingJobs:\nID\tPartition\tCommand\tDependency\tPriority")
     for job in curdb:
-        print("%d\t%s\t%s\t%d" % (job[0],job[2],job[1],job[3]))
+        print("%d\t%s\t%s\t%s\t%d" % (job[0],job[2],job[1],job[3],job[4]))
         
     ##Execute squeue -u with all partitions in the table ??
 

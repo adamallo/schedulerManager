@@ -17,6 +17,7 @@ def eprint(*args, **kwargs):
 parser = argparse.ArgumentParser(description="Shows the status of submitted jobs")
 parser.add_argument("-j",type=int,default=-1,required=False,help="Job id")
 parser.add_argument("-u",type=str,default=getpass.getuser(),required=False,help="User")
+parser.add_argument("-c",type=int,default=10,required=False,help="Number of completed jobs to show")
 args = parser.parse_args()
 
 ##DB connection
@@ -73,10 +74,20 @@ if not args.j ==-1:
 else:
     #raise NotImplementedError("All jobs option has not been implemented yet")
     curdb.execute("SELECT id, command, partition, dependency_id ,priority, rtime FROM pendingJobs ORDER BY priority DESC, rtime ASC")
-    print("PendingJobs:\nID\tPartition\tCommand\tDependency\tPriority")
+    print("\nPending jobs:\nID\tPartition\tCommand\tDependency\tPriority")
     for job in curdb:
         print("%d\t%s\t%s\t%s\t%d" % (job[0],job[2],job[1],job[3],job[4]))
-        
+
+    if args.c !=0:
+        curdb.execute("SELECT id, jobid, command, partition, dependency_id, dependency_fid, priority, stime FROM submittedJobs ORDER BY stime DESC")
+        i=0
+        print("\n\nLast %s submitted jobs:\nID\tSlurm_id\tPartition\tCommand\tDependency\tDependency fid\tPriority" % (args.c))
+        for job in curdb:
+            if i >= args.c:
+                break
+            print("%d\t%d\t%s\t%s\t%s\t%s\t%d" % (job[0],job[1],job[3],job[2],job[4],job[5],job[6]))
+            i=i+1
+    print("")
     ##Execute squeue -u with all partitions in the table ??
 
 sys.exit(0)

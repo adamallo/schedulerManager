@@ -10,5 +10,6 @@ wTime=confvars.wTime
 maxAttempts=confvars.maxAttempts
 maxDepAttempts=confvars.maxDepAttempts
 MaxRetry=confvars.maxRetry
+dbTimeout=confvars.dbTimeout
 regex=confvars.regex
 regexp=re.compile(regex)

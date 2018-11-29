@@ -1,10 +1,11 @@
 from pysqlite2 import dbapi2 as sqlite
 import logging
+from sharedconfig import *
 
 class dbhelper():
 
     def __init__(self,dbFile,credentials,cursor=None):
-        self.db=sqlite.connect(dbFile)
+        self.db=sqlite.connect(dbFile,timeout=dbTimeout)
         self.name=credentials
         if cursor is None:
             self.cursor=self.db.cursor()

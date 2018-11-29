@@ -9,6 +9,7 @@ signal(SIGPIPE, SIG_DFL) ##To avoid piping problems with head and other programs
 confvars=imp.load_source("config", os.path.dirname(os.path.abspath(__file__))+"/config.txt")
 defaultPartition=confvars.defaultPartition
 dbFile=confvars.dbFile
+dbTimeout=confvars.dbTimeout
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
@@ -22,7 +23,7 @@ args = parser.parse_args()
 
 ##DB connection
 try:
-    db=sqlite.connect(dbFile)
+    db=sqlite.connect(dbFile,timeout=dbTimeout)
 except:
     eprint("Error connecting to the database %d" % (dbFile))
     raise

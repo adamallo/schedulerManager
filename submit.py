@@ -15,7 +15,7 @@ defPrior=confvars.defaultPrior
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-usage="Usage: %s sbatch_arguments\n\n--prior: priority for the schedule wrapper\n--dependency= dependencies, :separated and with slumr code first (e.g., afterok)" % sys.argv[0]
+usage="Usage: %s sbatch_arguments\n\n--prior: priority for the schedule wrapper\n--dependency= dependencies, :separated and with slumr code first (e.g., afterok)\n--partition= SLURM partition to submit the job" % sys.argv[0]
 
 ##Argument parsing
 iargv=0
